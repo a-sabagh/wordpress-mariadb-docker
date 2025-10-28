@@ -1,0 +1,47 @@
+services:
+  mariadb:
+    image: mariadb:latest
+    restart: unless-stopped
+    volumes:
+      - wpdb:/backup
+    environment:
+      MARIADB_USER: wpmari_user
+      MARIADB_PASSWORD: wpmari_secret
+      MARIADB_DATABASE: wpmari_db
+      MARIADB_ROOT_PASSWORD: root
+    networks:
+      - wpmari_net
+    ports: 
+      - 3306:3306
+    container_name: wpmari_db_container
+  web:
+    image: wordpress:latest
+    depends_on: 
+      - mariadb
+    restart: unless-stopped
+    volumes: 
+      - .:/var/www/html
+    environment:
+      WORDPRESS_DB_HOST: mariadb
+      WORDPRESS_DB_USER: wpmari_user
+      WORDPRESS_DB_PASSWORD: wpmari_secret
+      WORDPRESS_DB_NAME: wpmari_db
+    networks:
+      - wpmari_net
+    ports: 
+      - 8080:80
+    container_name: wpmari_wp_container
+  adminer:
+      image: adminer
+      depends_on:
+        - mariadb
+      restart: unless-stopped
+      networks:
+      - wpmari_net
+      ports:
+        - 8081:8080
+      container_name: wpmari_adminer_container
+networks:
+  wpmari_net:
+volumes:
+  wpdb:
