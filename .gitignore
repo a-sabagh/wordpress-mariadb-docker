@@ -1,0 +1,8 @@
+# Ignore everything
+*
+
+# But not this file
+!compose.yaml
+
+# Optional: keep .gitignore itself
+!.gitignore
