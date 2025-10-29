@@ -1,9 +1,12 @@
 services:
+
   mariadb:
     image: mariadb:latest
     restart: unless-stopped
     volumes:
-      - wpdb:/backup
+      - wpdb:/var/lib/mysql
+    env_file:
+      - .env
     environment:
       MARIADB_USER: ${MARIADB_USER}
       MARIADB_PASSWORD: ${MARIADB_PASSWORD}
@@ -14,13 +17,19 @@ services:
     ports: 
       - 3306:3306
     container_name: wpmari_db_container
+
   web:
-    image: wordpress:latest
+    build:
+      context: .
+      dockerfile: ./docker/wordpress/Dockerfile
+      target: wp-cli
     depends_on: 
       - mariadb
     restart: unless-stopped
     volumes: 
       - ./src/:/var/www/html
+    env_file:
+      - .env
     environment:
       WORDPRESS_DB_HOST: mariadb
       WORDPRESS_DB_USER: ${MARIADB_USER}
@@ -30,17 +39,20 @@ services:
       - wpmari_net
     ports: 
       - 8080:80
+    user: "${UID}:${GID}"
     container_name: wpmari_wp_container
+
   adminer:
-      image: adminer
-      depends_on:
-        - mariadb
-      restart: unless-stopped
-      networks:
-      - wpmari_net
-      ports:
-        - 8081:8080
-      container_name: wpmari_adminer_container
+    image: adminer
+    depends_on:
+      - mariadb
+    restart: unless-stopped
+    networks:
+    - wpmari_net
+    ports:
+      - 8081:8080
+    container_name: wpmari_adminer_container
+
 networks:
   wpmari_net:
 volumes:
