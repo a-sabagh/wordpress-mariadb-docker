@@ -5,10 +5,10 @@ services:
     volumes:
       - wpdb:/backup
     environment:
-      MARIADB_USER: wpmari_user
-      MARIADB_PASSWORD: wpmari_secret
-      MARIADB_DATABASE: wpmari_db
-      MARIADB_ROOT_PASSWORD: root
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
     networks:
       - wpmari_net
     ports: 
@@ -20,12 +20,12 @@ services:
       - mariadb
     restart: unless-stopped
     volumes: 
-      - .:/var/www/html
+      - ./src/:/var/www/html
     environment:
       WORDPRESS_DB_HOST: mariadb
-      WORDPRESS_DB_USER: wpmari_user
-      WORDPRESS_DB_PASSWORD: wpmari_secret
-      WORDPRESS_DB_NAME: wpmari_db
+      WORDPRESS_DB_USER: ${MARIADB_USER}
+      WORDPRESS_DB_PASSWORD: ${MARIADB_PASSWORD}
+      WORDPRESS_DB_NAME: ${MARIADB_DATABASE}
     networks:
       - wpmari_net
     ports: 
