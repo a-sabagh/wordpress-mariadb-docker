@@ -16,7 +16,7 @@ services:
       - wpmari_net
     ports: 
       - 3306:3306
-    container_name: wpmari_db_container
+    container_name: ${APP_NAME:-wpmari}_db_container
 
   web:
     build:
@@ -40,7 +40,7 @@ services:
     ports: 
       - 8080:80
     user: "${UID}:${GID}"
-    container_name: wpmari_wp_container
+    container_name: ${APP_NAME:-wpmari}_wp_container
 
   adminer:
     image: adminer
@@ -51,7 +51,7 @@ services:
     - wpmari_net
     ports:
       - 8081:8080
-    container_name: wpmari_adminer_container
+    container_name: ${APP_NAME:-wpmari}_adminer_container
 
 networks:
   wpmari_net:
