@@ -15,7 +15,7 @@ services:
     networks:
       - wpmari_net
     ports: 
-      - 3306:3306
+      - 3307:3306
     container_name: ${APP_NAME:-wpmari}_db_container
 
   web:
@@ -43,15 +43,30 @@ services:
     container_name: ${APP_NAME:-wpmari}_wp_container
 
   adminer:
-    image: adminer
+    image: adminer:latest
     depends_on:
       - mariadb
     restart: unless-stopped
     networks:
     - wpmari_net
     ports:
-      - 8081:8080
+      - 8082:8080
     container_name: ${APP_NAME:-wpmari}_adminer_container
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    depends_on:
+      - mariadb
+    restart: unless-stopped
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=mariadb
+      - PMA_PORT=3306
+    networks:
+      - wpmari_net
+    ports:
+      - "8081:80"
+    container_name: ${APP_NAME:-wpmari}_phpmyadmin_container
 
 networks:
   wpmari_net:
