@@ -12,6 +12,7 @@ services:
       MARIADB_PASSWORD: ${MARIADB_PASSWORD}
       MARIADB_DATABASE: ${MARIADB_DATABASE}
       MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      WORDPRESS_DEBUG: ${WORDPRESS_DEBUG}
     networks:
       - wpmari_net
     ports: 
