@@ -22,7 +22,7 @@ services:
     build:
       context: ./docker/wordpress/
       dockerfile: Dockerfile
-      target: workstage
+      target: workspace
     depends_on: 
       - mariadb
     restart: unless-stopped
@@ -41,7 +41,7 @@ services:
     ports: 
       - 8080:80
     user: "${UID}:${GID}"
-    container_name: ${APP_NAME:-wpmari}_wp_container
+    container_name: ${APP_NAME:-wpmari}_wp_workspace
 
   adminer:
     image: adminer:latest
