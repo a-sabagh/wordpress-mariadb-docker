@@ -14,8 +14,6 @@ COPY --from=builder /tmp/wp-cli.phar /usr/local/bin/wp
 
 RUN wp --info
 
-COPY php.ini "${PHP_INI_DIR}/conf.d/"
-
 RUN pecl install xdebug && docker-php-ext-enable xdebug
 
-COPY ./xdebug.conf /usr/local/etc/php/conf.d/xdebug.ini
+COPY ./php.ini "${PHP_INI_DIR}/conf.d"
