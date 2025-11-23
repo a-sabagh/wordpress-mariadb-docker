@@ -17,3 +17,5 @@ RUN wp --info
 RUN pecl install xdebug && docker-php-ext-enable xdebug
 
 COPY ./php.ini "${PHP_INI_DIR}/conf.d"
+
+USER www-data
