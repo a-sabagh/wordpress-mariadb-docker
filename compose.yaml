@@ -1,77 +1,69 @@
 services:
-
   mariadb:
-    image: mariadb:latest
+    # Pin to the major.minor you currently run (check: docker compose exec mariadb mariadb --version).
+    # Never use :latest with an existing data directory; downgrades are unsupported.
+    image: mariadb:11.4
     restart: unless-stopped
-    volumes:
-      - wpdb:/var/lib/mysql
-    env_file:
-      - .env
     environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
       MARIADB_USER: ${MARIADB_USER}
       MARIADB_PASSWORD: ${MARIADB_PASSWORD}
-      MARIADB_DATABASE: ${MARIADB_DATABASE}
-      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+    volumes:
+      - wpdb:/var/lib/mysql
     networks:
       - wpmari_net
-    ports: 
-      - 3307:3306
-    container_name: ${APP_NAME:-wpmari}_db_container
+    # No "ports:" on purpose: the DB is reachable only inside the Compose network.
+    # Use Adminer below for browser access.
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   web:
     build:
       context: ./docker/wordpress/
       dockerfile: Dockerfile
       target: workspace
-    depends_on: 
-      - mariadb
     restart: unless-stopped
-    volumes: 
-      - ./src/:/var/www/html
-    env_file:
-      - .env
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    user: "${UID}:${GID}"
+    # No env_file here: the WordPress container must not see MARIADB_ROOT_PASSWORD.
     environment:
       WORDPRESS_DB_HOST: mariadb
       WORDPRESS_DB_USER: ${MARIADB_USER}
       WORDPRESS_DB_PASSWORD: ${MARIADB_PASSWORD}
       WORDPRESS_DB_NAME: ${MARIADB_DATABASE}
-      WORDPRESS_DEBUG: ${WORDPRESS_DEBUG}
+      WORDPRESS_DEBUG: ${WORDPRESS_DEBUG:-1}
+    volumes:
+      - ./src/:/var/www/html
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
       - wpmari_net
-    ports: 
-      - 8080:80
-    user: "${UID}:${GID}"
-    container_name: ${APP_NAME:-wpmari}_wp_workspace
+    ports:
+      - "127.0.0.1:${WORDPRESS_PORT:-8080}:80"
 
   adminer:
-    image: adminer:latest
-    depends_on:
-      - mariadb
+    # Check Docker Hub for the version you want and pin it.
+    image: adminer:4
     restart: unless-stopped
-    networks:
-    - wpmari_net
-    ports:
-      - 8082:8080
-    container_name: ${APP_NAME:-wpmari}_adminer_container
-
-  phpmyadmin:
-    image: phpmyadmin:latest
     depends_on:
-      - mariadb
-    restart: unless-stopped
+      mariadb:
+        condition: service_healthy
     environment:
-      - PMA_ARBITRARY=1
-      - PMA_HOST=mariadb
-      - PMA_PORT=3306
+      ADMINER_DEFAULT_SERVER: mariadb
     networks:
       - wpmari_net
     ports:
-      - "8081:80"
-    container_name: ${APP_NAME:-wpmari}_phpmyadmin_container
+      - "127.0.0.1:${ADMINER_PORT:-8082}:8080"
 
 networks:
   wpmari_net:
+
 volumes:
   wpdb:
